@@ -13,7 +13,15 @@ function SearchBar() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!searchQuery || !selectedActivity) return;
-    const prompt = `Given the city: ${searchQuery} and the activity: ${selectedActivity}, provide:\n1. The latitude and longitude of the city as a JSON object: { \"lat\": ..., \"lng\": ... }\n2. A list of 5 places in that city suitable for ${selectedActivity}, as a JSON array of objects with \"name\" and \"address\".\nRespond ONLY with a JSON object: { \"coordinates\": { \"lat\": ..., \"lng\": ... }, \"places\": [ ... ] }`;
+    const prompt = `Given the city: ${searchQuery} and the activity: ${selectedActivity}, provide:
+1. The latitude and longitude of the city as a JSON object: { "lat": ..., "lng": ... }
+2. A list of 5 places in that city suitable for ${selectedActivity}, as a JSON array of objects with:
+   - "name": name of the place
+   - "address": full address
+   - "rating": number between 0-5 (can include decimals)
+   - "reviews": array of 3 recent reviews (each review should be a string)
+   - "description": brief description of the place
+Respond ONLY with a JSON object: { "coordinates": { "lat": ..., "lng": ... }, "places": [ ... ] }`;
     try {
       const response = await sendMessage(prompt);
       let jsonString = "";
