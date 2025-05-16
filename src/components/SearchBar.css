@@ -52,6 +52,16 @@
   background-color: #0056b3;
 }
 
+.error-message {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .search-form {
