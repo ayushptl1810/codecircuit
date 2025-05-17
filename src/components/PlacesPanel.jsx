@@ -65,6 +65,16 @@ function PlacesPanel() {
                     </p>
                   ))}
                 </div>
+                {place.mapsUrl && (
+                  <a
+                    href={place.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="maps-link"
+                  >
+                    View on Google Maps
+                  </a>
+                )}
               </div>
             ))}
           </div>

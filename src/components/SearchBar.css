@@ -1,22 +1,25 @@
 .search-bar-container {
-  width: 90%;
+  width: 74%;
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0;
   margin: 0;
+  background: rgba(0, 0, 0, 0.8);
   padding: 15px;
-  background: transparent;
-  border-radius: 0 0 8px 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
 
 .search-form {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: center;
-  justify-content: center;
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
 }
 
 .search-input {
@@ -25,7 +28,6 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 16px;
-  min-width: 200px;
 }
 
 .activity-select {
@@ -34,10 +36,31 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 16px;
-  min-width: 150px;
+}
+
+.filters-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.filters-container {
+  flex: 3;
+  display: flex;
+  gap: 10px;
+}
+
+.filter-select {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;
 }
 
 .search-button {
+  flex: 1;
   padding: 12px 24px;
   background-color: #007bff;
   color: white;
@@ -46,6 +69,8 @@
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.2s;
+  height: 100%;
+  align-self: stretch;
 }
 
 .search-button:hover {
@@ -64,14 +89,24 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .search-form {
+  .search-bar-container {
+    width: calc(100% - 20px);
+  }
+
+  .search-row,
+  .filters-row {
     flex-direction: column;
   }
 
   .search-input,
   .activity-select,
+  .filter-select,
   .search-button {
     width: 100%;
+  }
+
+  .filters-container {
+    flex-direction: column;
   }
 }
 
