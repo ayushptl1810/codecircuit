@@ -18,6 +18,8 @@ function SearchBar() {
 2. A list of 5 places in that city suitable for ${selectedActivity}, as a JSON array of objects with:
    - "name": name of the place
    - "address": full address
+   - "lat": latitude of the place
+   - "lng": longitude of the place
    - "rating": number between 0-5 (can include decimals)
    - "reviews": array of 3 recent reviews (each review should be a string)
    - "description": brief description of the place
