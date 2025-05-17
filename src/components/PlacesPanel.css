@@ -1,3 +1,16 @@
+/* Hide scrollbar on main page */
+body {
+  margin-top: 80px;
+  overflow: hidden;
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 .places-panel {
   position: fixed;
   top: 0;
@@ -7,7 +20,6 @@
   background: rgba(0, 0, 0, 0.8);
   color: white;
   z-index: 2;
-  overflow-y: auto;
   padding-inline: 20px;
   padding-block: 10px;
   box-sizing: border-box;
@@ -27,9 +39,31 @@
   margin: 0;
 }
 
+/* Welcome message container - no scroll */
+.welcome-message {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+/* Places container - scrollable only when there are places */
 .places-container {
   width: 100%;
   padding: 20px 0;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .places-container h2 {
@@ -59,9 +93,10 @@
 }
 
 .address {
-  color: #ccc;
+  color: #e3e2e2;
   font-size: 0.9em;
   margin-bottom: 10px;
+  font-weight: bold;
 }
 
 .rating-container {
@@ -114,6 +149,7 @@
 .reviews {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding-top: 10px;
+  font-weight: bold;
 }
 
 .reviews h4 {
@@ -146,16 +182,6 @@
 
 .places-panel::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.4);
-}
-
-.welcome-message {
-  text-align: center;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 80px);
 }
 
 .welcome-logo {
@@ -196,4 +222,71 @@
 .maps-link:hover {
   background-color: #3367d6;
   color: white;
+}
+
+.no-results-message {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+.no-results-message h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.no-results-message p {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #eee;
+  max-width: 90%;
+  margin: 0 auto 20px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.suggestions {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 90%;
+  max-width: 500px;
+}
+
+.suggestions h3 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+}
+
+.suggestions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.suggestions li {
+  color: #ddd;
+  margin: 10px 0;
+  padding-left: 25px;
+  position: relative;
+  font-size: 1em;
+}
+
+.suggestions li:before {
+  content: "→";
+  color: #4285f4;
+  position: absolute;
+  left: 0;
+  font-size: 1.2em;
 }

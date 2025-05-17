@@ -71,6 +71,23 @@ function Globe() {
     [imageryProvider, terrainProvider]
   );
 
+  // Filter out places with invalid coordinates
+  const validPlaces = useMemo(() => {
+    if (!places || !Array.isArray(places)) return [];
+    return places.filter(
+      (place) =>
+        place &&
+        typeof place.lat === "number" &&
+        typeof place.lng === "number" &&
+        !isNaN(place.lat) &&
+        !isNaN(place.lng) &&
+        place.lat >= -90 &&
+        place.lat <= 90 &&
+        place.lng >= -180 &&
+        place.lng <= 180
+    );
+  }, [places]);
+
   // Globe rotation effect
   useEffect(() => {
     const viewer = viewerRef.current && viewerRef.current.cesiumElement;
@@ -106,7 +123,7 @@ function Globe() {
       <div className="globe-container">
         <Viewer ref={viewerRef} {...viewerOptions}>
           <CameraController coordinates={coordinates} />
-          {coordinates && (
+          {coordinates && coordinates.lat && coordinates.lng && (
             <Entity
               position={Cartesian3.fromDegrees(
                 coordinates.lng,
@@ -120,7 +137,7 @@ function Globe() {
               }}
               label={{
                 text: coordinates.name || "Selected Location",
-                font: "14px sans-serif",
+                font: "15px sans-serif",
                 fillColor: Color.WHITE,
                 style: LabelStyle.FILL_AND_OUTLINE,
                 outlineWidth: 2,
@@ -134,7 +151,7 @@ function Globe() {
               name={coordinates.name || "Selected Location"}
             />
           )}
-          {places.map((place, index) => (
+          {validPlaces.map((place, index) => (
             <Entity
               key={index}
               position={Cartesian3.fromDegrees(place.lng, place.lat)}
@@ -146,10 +163,10 @@ function Globe() {
               }}
               label={{
                 text: place.name,
-                font: "12px sans-serif",
+                font: "15px sans-serif",
                 fillColor: Color.WHITE,
                 style: LabelStyle.FILL_AND_OUTLINE,
-                outlineWidth: 2,
+                outlineWidth: 3,
                 verticalOrigin: VerticalOrigin.BOTTOM,
                 pixelOffset: new Cartesian3(0, -10),
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,

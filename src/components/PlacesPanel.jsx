@@ -30,6 +30,21 @@ function PlacesPanel() {
     );
   };
 
+  const renderErrorState = (errorData) => (
+    <div className="no-results-message">
+      <h2>No Places Found</h2>
+      <p>{errorData.message}</p>
+      <div className="suggestions">
+        <h3>Try these suggestions:</h3>
+        <ul>
+          {errorData.suggestions.map((suggestion, index) => (
+            <li key={index}>{suggestion}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
   return (
     <div className="places-panel">
       {places.length === 0 ? (
@@ -42,6 +57,8 @@ function PlacesPanel() {
             experiences, we'll help you explore what each city has to offer.
           </p>
         </div>
+      ) : places[0]?.error ? (
+        renderErrorState(places[0])
       ) : (
         <div className="places-container">
           <h2>Recommended Places</h2>
