@@ -3,43 +3,33 @@ import { Viewer, Entity, useCesium } from "resium";
 import {
   Ion,
   createWorldTerrain,
-  Color,
   createWorldImagery,
   Cartesian3,
   EasingFunction,
   HeadingPitchRange,
   Rectangle,
   BoundingSphere,
-  LabelStyle,
-  VerticalOrigin,
   Math as CesiumMath,
 } from "cesium";
 import ErrorBoundary from "./ErrorBoundary";
 import { useGlobe } from "../context/GlobeContext";
-import "./Globe.css";
+import CameraController from "./CameraController";
+import {
+  VIEWER_OPTIONS,
+  POINT_STYLES,
+  LABEL_STYLES,
+  ROTATION_SPEED,
+} from "../config/globeConfig";
+import "../styles/Globe.css";
 
-// Replace this with your own Cesium ion access token from https://cesium.com/ion/tokens
+// Initialize Cesium ion access token for terrain and imagery
 Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_ACCESS_TOKEN;
 
-// Create a separate component for the camera control
-function CameraController({ coordinates }) {
-  const { camera } = useCesium();
-
-  useEffect(() => {
-    if (coordinates && camera) {
-      const { lat, lng } = coordinates;
-      const center = Cartesian3.fromDegrees(lng, lat);
-      const boundingSphere = new BoundingSphere(center, 50000);
-      camera.flyToBoundingSphere(boundingSphere, {
-        duration: 3,
-        offset: new HeadingPitchRange(0, -Math.PI / 4, 0),
-      });
-    }
-  }, [coordinates, camera]);
-
-  return null;
-}
-
+/**
+ * Globe Component
+ * Renders a 3D globe visualization using Cesium
+ * Manages the globe's terrain, imagery, and entity markers
+ */
 function Globe() {
   const terrainProvider = useMemo(() => createWorldTerrain(), []);
   const imageryProvider = useMemo(() => createWorldImagery(), []);
@@ -47,31 +37,17 @@ function Globe() {
   const viewerRef = useRef(null);
   const animationRef = useRef(null);
 
-  // Memoize the viewer options to prevent recreation
+  // Configure viewer options with terrain and imagery providers
   const viewerOptions = useMemo(
     () => ({
-      full: true,
-      scene3DOnly: true,
-      baseLayerPicker: false,
-      navigationHelpButton: false,
-      homeButton: false,
-      geocoder: false,
-      animation: false,
-      timeline: false,
-      fullscreenButton: false,
-      infoBox: false,
-      imageryProvider: imageryProvider,
-      terrainProvider: terrainProvider,
-      contextOptions: {
-        webgl: {
-          alpha: true,
-        },
-      },
+      ...VIEWER_OPTIONS,
+      imageryProvider,
+      terrainProvider,
     }),
     [imageryProvider, terrainProvider]
   );
 
-  // Filter out places with invalid coordinates
+  // Filter and validate place coordinates
   const validPlaces = useMemo(() => {
     if (!places || !Array.isArray(places)) return [];
     return places.filter(
@@ -88,7 +64,7 @@ function Globe() {
     );
   }, [places]);
 
-  // Globe rotation effect
+  // Handle globe rotation when no location is selected
   useEffect(() => {
     const viewer = viewerRef.current && viewerRef.current.cesiumElement;
     if (!viewer) return;
@@ -96,11 +72,7 @@ function Globe() {
     function rotate() {
       if (!coordinates) {
         const camera = viewer.scene.camera;
-        const currentPosition = camera.position;
-
-        // Rotate around the vertical axis (Z-axis)
-        camera.rotate(Cartesian3.UNIT_Z, CesiumMath.toRadians(0.1));
-
+        camera.rotate(Cartesian3.UNIT_Z, CesiumMath.toRadians(ROTATION_SPEED));
         animationRef.current = requestAnimationFrame(rotate);
       }
     }
@@ -129,24 +101,10 @@ function Globe() {
                 coordinates.lng,
                 coordinates.lat
               )}
-              point={{
-                pixelSize: 10,
-                color: Color.RED,
-                outlineColor: Color.WHITE,
-                outlineWidth: 2,
-              }}
+              point={POINT_STYLES.selected}
               label={{
+                ...LABEL_STYLES,
                 text: coordinates.name || "Selected Location",
-                font: "15px sans-serif",
-                fillColor: Color.WHITE,
-                style: LabelStyle.FILL_AND_OUTLINE,
-                outlineWidth: 2,
-                verticalOrigin: VerticalOrigin.BOTTOM,
-                pixelOffset: new Cartesian3(0, -10),
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
-                showBackground: true,
-                backgroundColor: Color.BLACK.withAlpha(0.7),
-                backgroundPadding: new Cartesian3(7, 5, 7),
               }}
               name={coordinates.name || "Selected Location"}
             />
@@ -155,24 +113,10 @@ function Globe() {
             <Entity
               key={index}
               position={Cartesian3.fromDegrees(place.lng, place.lat)}
-              point={{
-                pixelSize: 8,
-                color: Color.YELLOW,
-                outlineColor: Color.WHITE,
-                outlineWidth: 1,
-              }}
+              point={POINT_STYLES.place}
               label={{
+                ...LABEL_STYLES,
                 text: place.name,
-                font: "15px sans-serif",
-                fillColor: Color.WHITE,
-                style: LabelStyle.FILL_AND_OUTLINE,
-                outlineWidth: 3,
-                verticalOrigin: VerticalOrigin.BOTTOM,
-                pixelOffset: new Cartesian3(0, -10),
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
-                showBackground: true,
-                backgroundColor: Color.BLACK.withAlpha(0.7),
-                backgroundPadding: new Cartesian3(7, 5, 7),
               }}
               name={place.name}
               description={place.address}

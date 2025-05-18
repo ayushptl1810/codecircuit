@@ -1,0 +1,25 @@
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  position: relative;
+  font-size: 1.2em;
+  color: #666;
+}
+
+.star.full {
+  color: #ffd700;
+}
+
+.star.partial {
+  background: linear-gradient(
+    90deg,
+    #ffd700 var(--fill-percentage),
+    #666 var(--fill-percentage)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

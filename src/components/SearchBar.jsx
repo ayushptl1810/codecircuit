@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import "./SearchBar.css";
+import "../styles/SearchBar.css";
 import { useGemini } from "../utils/geminiService";
 import { useGlobe } from "../context/GlobeContext";
+import { activityFilters } from "../config/activityFilters";
 
+/**
+ * SearchBar Component
+ * Handles user input for location search and activity selection
+ * Manages the search state and communicates with the Gemini API
+ */
 function SearchBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedActivity, setSelectedActivity] = useState("");
@@ -11,84 +17,19 @@ function SearchBar() {
   const { sendMessage, isLoading, error } = useGemini(apiKey);
   const { setCoordinates, setPlaces } = useGlobe();
 
-  // Activity-specific filter options
-  const activityFilters = {
-    hiking: {
-      Difficulty: ["Easy 🟢", "Moderate 🟡", "Challenging 🔴"],
-      Terrain: ["Forest 🌲", "Mountain ⛰️", "Scenic 🏞️", "Trail 👣"],
-      Duration: ["Short ⏱️", "Medium ➡️", "Long 🏁"],
-    },
-    beaches: {
-      Type: ["Shell Beach 🐚", "Coral Reef 🐠", "Surf Beach 🏄"],
-      Amenities: ["Beach Umbrellas ⛱️", "Restrooms 🚻", "Food Vendors 🍔"],
-      "Crowd Level": ["Quiet 👤", "Moderate 👥", "Busy 👥👥👥"],
-    },
-    wildlife: {
-      "Animal Focus": ["Big Cats 🦁", "Elephants 🐘", "Birds 🐦"],
-      "Safari Type": [
-        "Vehicle Safari 🚗",
-        "Walking Safari 🚶",
-        "Boat Safari 🛶",
-      ],
-      Duration: ["Half Day ⏱️", "Full Day ☀️", "Overnight 🌙"],
-    },
-    camping: {
-      Accommodation: ["Tent ⛺", "Cabin 🏡", "Luxury ⭐"],
-      Facilities: ["Campfire 🔥", "Restrooms 🚻", "Electricity 🔌"],
-      Location: ["Forest 🌲", "Scenic 🏞️", "Mountain ⛰️"],
-    },
-    waterSports: {
-      "Sport Type": ["Surfing 🏄", "Diving 🤿", "Sailing ⛵"],
-      "Experience Level": ["Beginner 🟢", "Intermediate 🟡", "Advanced 🔴"],
-      "Water Body": ["Ocean 🌊", "Lake/River 🏞️"],
-    },
-    historical: {
-      Era: ["Ancient 🗿", "Medieval 🏰", "Modern 🏢"],
-      "Site Type": ["Ruins 🧱", "Museum 🖼️", "Landmark 🏛️"],
-      Accessibility: [
-        "Wheelchair Accessible ♿",
-        "Walking Distance 🚶",
-        "Public Transport 🚌",
-      ],
-    },
-    museums: {
-      "Art Style": ["Fine Art 🎨", "Antiquities 🏺", "Contemporary 🖼️"],
-      "Time Period": ["Modern", "Classical", "Ancient"],
-      Interactive: ["Touch Screens 📱", "Audio Guides 🎧", "Guided Tours 🗣️"],
-    },
-    culture: {
-      "Experience Type": ["Performances 🎭", "Cooking 🧑‍🍳", "Music 🎶"],
-      Theme: ["Festivals 🎉", "Community 🤝", "Traditional 🧺"],
-      Immersion: ["Observational 👀", "Interactive 👂", "Hands-on ✋"],
-    },
-    foodie: {
-      Cuisine: ["Italian 🇮🇹", "Japanese 🇯🇵", "Mexican 🇲🇽"],
-      "Dining Style": ["Fine Dining 🍽️", "Cooking Class 🧑‍🍳", "Food Tour 🚚"],
-      "Price Range": ["Budget 💲", "Moderate 💲💲", "Luxury 💲💲💲"],
-    },
-    sightseeing: {
-      Transport: ["Walking 🚶", "Bus Tour 🚌", "Bicycle 🚲"],
-      Theme: ["Historic", "Modern", "Iconic"],
-      Pace: ["Relaxed", "Brisk", "Focused"],
-    },
-    shopping: {
-      Goods: ["Local Crafts 🛍️", "Art 🎨", "Local Products 🏺"],
-      Area: ["Shopping Mall", "Street Market", "Boutique"],
-      "Price Range": ["Budget 💲", "Moderate 💲💲", "Luxury 💲💲💲"],
-    },
-    nightlife: {
-      "Venue Type": ["Bar 🍹", "Live Music 🎶", "Dance Club 💃"],
-      Vibe: ["Relaxed", "Lively", "Sophisticated"],
-      "Dress Code": ["Casual", "Smart Casual", "Formal"],
-    },
-  };
-
+  /**
+   * Handles activity selection change
+   * Resets filters when a new activity is selected
+   */
   const handleActivityChange = (e) => {
     const activity = e.target.value;
     setSelectedActivity(activity);
-    setFilters({}); // Reset filters when activity changes
+    setFilters({});
   };
 
+  /**
+   * Updates filter state when a filter option is selected
+   */
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({
       ...prev,
@@ -96,10 +37,15 @@ function SearchBar() {
     }));
   };
 
+  /**
+   * Handles form submission and communicates with Gemini API
+   * Processes the response and updates the globe state
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!searchQuery || !selectedActivity) return;
 
+    // Format filters for the API prompt
     const filterString = Object.entries(filters)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
@@ -146,108 +92,85 @@ Important:
 
     try {
       const response = await sendMessage(prompt);
-      let jsonString = "";
+      let jsonString = response?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      if (response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-        jsonString = response.candidates[0].content.parts[0].text;
-      } else {
+      if (!jsonString) {
         throw new Error("Invalid response format from API");
       }
 
-      try {
-        // Clean up the response string
-        jsonString = jsonString.replace(/```json|```/g, "").trim();
-        const parsed = JSON.parse(jsonString);
+      // Parse and clean the API response
+      jsonString = jsonString.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(jsonString);
 
-        if (parsed.error) {
-          // Handle error response
-          setPlaces([parsed]);
-          setCoordinates(null);
-        } else {
-          // Validate coordinates
-          if (
-            !parsed.coordinates ||
-            typeof parsed.coordinates.lat !== "number" ||
-            typeof parsed.coordinates.lng !== "number" ||
-            isNaN(parsed.coordinates.lat) ||
-            isNaN(parsed.coordinates.lng) ||
-            parsed.coordinates.lat < -90 ||
-            parsed.coordinates.lat > 90 ||
-            parsed.coordinates.lng < -180 ||
-            parsed.coordinates.lng > 180
-          ) {
-            throw new Error("Invalid coordinates in response");
-          }
-
-          // Set coordinates if valid
-          setCoordinates({
-            lat: Number(parsed.coordinates.lat),
-            lng: Number(parsed.coordinates.lng),
-            name: searchQuery,
-          });
-
-          // Validate places
-          if (
-            parsed.places &&
-            Array.isArray(parsed.places) &&
-            parsed.places.length > 0
-          ) {
-            const validPlaces = parsed.places.filter(
-              (place) =>
-                place.name &&
-                place.address &&
-                typeof place.lat === "number" &&
-                typeof place.lng === "number" &&
-                !isNaN(place.lat) &&
-                !isNaN(place.lng) &&
-                place.lat >= -90 &&
-                place.lat <= 90 &&
-                place.lng >= -180 &&
-                place.lng <= 180
-            );
-
-            if (validPlaces.length > 0) {
-              // Ensure all coordinates are numbers
-              const processedPlaces = validPlaces.map((place) => ({
-                ...place,
-                lat: Number(place.lat),
-                lng: Number(place.lng),
-              }));
-              setPlaces(processedPlaces);
-            } else {
-              throw new Error("No valid places found in response");
-            }
-          } else {
-            throw new Error("No places found in response");
-          }
-        }
-      } catch (parseError) {
-        console.error("Error parsing response:", parseError);
-        setPlaces([
-          {
-            error: true,
-            message: "Unable to process the response. Please try again.",
-            suggestions: [
-              "Try a different location",
-              "Adjust your activity filters",
-              "Search for a more general area",
-              "Try a different activity type",
-            ],
-          },
-        ]);
+      if (parsed.error) {
+        setPlaces([parsed]);
         setCoordinates(null);
+        return;
       }
-    } catch (apiError) {
-      console.error("API Error:", apiError);
+
+      // Validate and process coordinates
+      if (
+        !parsed.coordinates ||
+        typeof parsed.coordinates.lat !== "number" ||
+        typeof parsed.coordinates.lng !== "number" ||
+        isNaN(parsed.coordinates.lat) ||
+        isNaN(parsed.coordinates.lng) ||
+        parsed.coordinates.lat < -90 ||
+        parsed.coordinates.lat > 90 ||
+        parsed.coordinates.lng < -180 ||
+        parsed.coordinates.lng > 180
+      ) {
+        throw new Error("Invalid coordinates in response");
+      }
+
+      // Update coordinates with validated data
+      setCoordinates({
+        lat: Number(parsed.coordinates.lat),
+        lng: Number(parsed.coordinates.lng),
+        name: searchQuery,
+      });
+
+      // Validate and process places
+      if (!parsed.places?.length) {
+        throw new Error("No places found in response");
+      }
+
+      const validPlaces = parsed.places.filter(
+        (place) =>
+          place.name &&
+          place.address &&
+          typeof place.lat === "number" &&
+          typeof place.lng === "number" &&
+          !isNaN(place.lat) &&
+          !isNaN(place.lng) &&
+          place.lat >= -90 &&
+          place.lat <= 90 &&
+          place.lng >= -180 &&
+          place.lng <= 180
+      );
+
+      if (validPlaces.length === 0) {
+        throw new Error("No valid places found in response");
+      }
+
+      // Ensure all coordinates are numbers and update places
+      const processedPlaces = validPlaces.map((place) => ({
+        ...place,
+        lat: Number(place.lat),
+        lng: Number(place.lng),
+      }));
+      setPlaces(processedPlaces);
+    } catch (error) {
+      console.error("Error:", error);
       setPlaces([
         {
           error: true,
-          message: "Error connecting to the service. Please try again.",
+          message: error.message || "An error occurred. Please try again.",
           suggestions: [
-            "Check your internet connection",
-            "Try searching again",
-            "Try different search terms",
-            "Contact support if the problem persists",
+            "Try a different location",
+            "Adjust your activity filters",
+            "Search for a more general area",
+            "Try a different activity type",
           ],
         },
       ]);
