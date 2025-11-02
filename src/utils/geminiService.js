@@ -1,7 +1,7 @@
 import React from "react";
 
 // Gemini API service utility
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
 /**
  * Sends a request to the Gemini API
